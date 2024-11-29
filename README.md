@@ -248,5 +248,11 @@ Para contribuir com o projeto:
 3. Envie suas alterações: git push origin minha-feature.
 4. Abra um pull request.
 
+## Versão Online
+Para interagir com uma versão de amostra online, basta acessar estes endpoints acima citados no endereço:
+```
+http://34.27.170.36:3000/
+```
+
 ## Licença
 Este projeto está licenciado sob os termos da GNU GENERAL PUBLIC LICENSE.
