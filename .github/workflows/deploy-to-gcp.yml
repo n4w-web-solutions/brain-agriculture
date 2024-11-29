@@ -1,3 +1,57 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - id: 'github_checkout'
+      uses: 'actions/checkout@v3'
+
+    - id: 'gcloud_auth'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS_JSON }}'
+
+    - id: 'deploy_google_appengine'
+      name: Deploy App
+      uses: 'google-github-actions/deploy-appengine@v2'
+      with:
+        project_id: ${{ secrets.GCP_PROJECTID }}
+        env_vars: |-
+          TZ=America/Sao_Paulo
+        deliverables: app.yaml
+        flags: --stop-previous-version
+
+    - id: 'test_deployed_verion'
+      name: Testing deployed version
+      run: 'echo "Service-URL: ${{ steps.deploy_google_appengine.outputs.version_url }}"'
+
+    - id: 'setup_gcloud_sdk'
+      name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2'
+      with:
+        version: '>= 363.0.0'
+
+    - id: 'delete_old_versions_appengine'
+      name: Delete Old Versions of App Engine Service
+      run: gcloud app versions list --format="value(version.id)" --sort-by="~version.createTime" | tail -n +2 | xargs -r gcloud app versions delete --quiet
+
+
+
+
+
+
+
+
+
+
 name: Deploy to GCP
 
 on:
@@ -26,6 +80,6 @@ jobs:
 
       - name: Deploy to Google Cloud
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.deploy_to_gcp }}
         run: |
           gcloud app deploy --quiet
